@@ -1,6 +1,7 @@
 package org.example.yourordercustomer.order.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.yourordercustomer.exception.NotFoundException;
 import org.example.yourordercustomer.kafka.producer.OrderEventProducer;
 import org.example.yourordercustomer.order.dto.OrderItemRequest;
 import org.example.yourordercustomer.order.dto.OrderRequest;
@@ -42,12 +43,12 @@ public class CustomerOrderService {
     @Transactional(readOnly = true)
     public OrderEntity getOrderById(UUID orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Order not found"));
     }
 
     public OrderEntity cancelOrder(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Order not found"));
 
         order.cancel();
         OrderEntity savedOrder = orderRepository.save(order);
@@ -62,7 +63,7 @@ public class CustomerOrderService {
 
     private void addOrderItem(OrderEntity order, OrderItemRequest itemRequest) {
         ProductViewEntity product = productViewRepository.findById(itemRequest.productId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found"));
 
         OrderItemEntity orderItem = OrderItemEntity.builder()
                 .product(product)
