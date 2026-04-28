@@ -56,6 +56,24 @@ public class CustomerOrderService {
         return savedOrder;
     }
 
+    public OrderEntity markOrderReserved(UUID orderId) {
+        OrderEntity order = getOrderById(orderId);
+        order.markReserved();
+        return orderRepository.save(order);
+    }
+
+    public OrderEntity markOrderPaid(UUID orderId) {
+        OrderEntity order = getOrderById(orderId);
+        order.markPaid();
+        return orderRepository.save(order);
+    }
+
+    public OrderEntity markOrderPaymentFailed(UUID orderId) {
+        OrderEntity order = getOrderById(orderId);
+        order.cancel();
+        return orderRepository.save(order);
+    }
+
     @Transactional(readOnly = true)
     public Page<OrderEntity> getOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
