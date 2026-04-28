@@ -27,6 +27,12 @@ public class CustomerOrderController {
         return mapToResponse(order);
     }
 
+    @GetMapping("/check")
+    public String check() {
+        return "Customer service works!";
+    }
+
+
     @GetMapping("/{id}")
     public OrderResponse getOrderById(@PathVariable UUID id) {
         OrderEntity order = customerOrderService.getOrderById(id);

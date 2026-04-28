@@ -1,6 +1,8 @@
 spring:
   application:
     name: yourorder-customer
+  kafka:
+    bootstrap-servers: localhost:9092
 
   datasource:
     url: jdbc:postgresql://localhost:5434/yourorder_customer

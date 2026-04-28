@@ -1,6 +1,7 @@
 package org.example.yourordercustomer.order.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.yourordercustomer.kafka.producer.OrderEventProducer;
 import org.example.yourordercustomer.order.dto.OrderItemRequest;
 import org.example.yourordercustomer.order.dto.OrderRequest;
 import org.example.yourordercustomer.order.entity.OrderEntity;
@@ -22,6 +23,7 @@ public class CustomerOrderService {
 
     private final OrderRepository orderRepository;
     private final ProductViewRepository productViewRepository;
+    private final OrderEventProducer orderEventProducer;
 
     public OrderEntity createOrder(OrderRequest request) {
         OrderEntity order = OrderEntity.builder()
@@ -32,7 +34,9 @@ public class CustomerOrderService {
             addOrderItem(order, itemRequest);
         }
 
-        return orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.save(order);
+        orderEventProducer.sendOrderCreated(savedOrder);
+        return savedOrder;
     }
 
     @Transactional(readOnly = true)
@@ -46,7 +50,9 @@ public class CustomerOrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         order.cancel();
-        return orderRepository.save(order);
+        OrderEntity savedOrder = orderRepository.save(order);
+        orderEventProducer.sendOrderCancelled(savedOrder);
+        return savedOrder;
     }
 
     @Transactional(readOnly = true)
