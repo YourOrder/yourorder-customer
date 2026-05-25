@@ -26,7 +26,6 @@ public class CustomerOrderService {
     private final ProductViewRepository productViewRepository;
     private final OrderEventProducer orderEventProducer;
 
-    // userId теперь из хедера, а не из тела
     public OrderEntity createOrder(UUID userId, OrderRequest request) {
         OrderEntity order = OrderEntity.builder()
                 .userId(userId)
@@ -43,14 +42,16 @@ public class CustomerOrderService {
 
     @Transactional(readOnly = true)
     public OrderEntity getOrderById(UUID orderId, UUID userId) {
-        return orderRepository.findByIdAndUserId(orderId, userId)
+        OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
+        order.getItems().forEach(item -> item.getProduct().getName());
+        return order;
     }
 
     public OrderEntity cancelOrder(UUID orderId, UUID userId) {
         OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
-
+        order.getItems().forEach(item -> item.getProduct().getName());
         order.cancel();
         OrderEntity savedOrder = orderRepository.save(order);
         orderEventProducer.sendOrderCancelled(savedOrder);
@@ -77,10 +78,13 @@ public class CustomerOrderService {
 
     @Transactional(readOnly = true)
     public Page<OrderEntity> getOrders(UUID userId, Pageable pageable) {
-        return orderRepository.findByUserId(userId, pageable);
+        Page<OrderEntity> page = orderRepository.findByUserId(userId, pageable);
+        page.getContent().forEach(order ->
+                order.getItems().forEach(item -> item.getProduct().getName())
+        );
+        return page;
     }
 
-    // внутренний метод для Kafka-консьюмеров (без проверки userId)
     private OrderEntity findById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
