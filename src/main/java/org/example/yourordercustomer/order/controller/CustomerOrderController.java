@@ -7,9 +7,11 @@ import org.example.yourordercustomer.order.dto.OrderResponse;
 import org.example.yourordercustomer.order.dto.OrderItemResponse;
 import org.example.yourordercustomer.order.entity.OrderEntity;
 import org.example.yourordercustomer.order.service.CustomerOrderService;
+import org.example.yourordercustomer.security.model.UserPrincipal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -23,40 +25,41 @@ public class CustomerOrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(
-            @RequestHeader("X-User-Id") UUID userId, // из Gateway
-            @Valid @RequestBody OrderRequest request
-    ) {
+    public OrderResponse createOrder(@Valid @RequestBody OrderRequest request) {
+        UUID userId = getPrincipal().userId();
         OrderEntity order = customerOrderService.createOrder(userId, request);
         return mapToResponse(order);
     }
 
 
     @GetMapping("/{id}")
-    public OrderResponse getOrderById(
-            @RequestHeader("X-User-Id") UUID userId,
-            @PathVariable UUID id
-    ) {
+    public OrderResponse getOrderById(@PathVariable UUID id) {
+        UUID userId = getPrincipal().userId();
         OrderEntity order = customerOrderService.getOrderById(id, userId);
         return mapToResponse(order);
     }
 
+
     @GetMapping
-    public Page<OrderResponse> getOrders(
-            @RequestHeader("X-User-Id") UUID userId,
-            Pageable pageable
-    ) {
+    public Page<OrderResponse> getOrders(Pageable pageable) {
+        UUID userId = getPrincipal().userId();
         return customerOrderService.getOrders(userId, pageable)
                 .map(this::mapToResponse);
     }
 
     @PatchMapping("/{id}/cancel")
-    public OrderResponse cancelOrder(
-            @RequestHeader("X-User-Id") UUID userId,
-            @PathVariable UUID id
-    ) {
+    public OrderResponse cancelOrder(@PathVariable UUID id) {
+        UUID userId = getPrincipal().userId();
         OrderEntity order = customerOrderService.cancelOrder(id, userId);
         return mapToResponse(order);
+    }
+
+
+    private UserPrincipal getPrincipal() {
+        return (UserPrincipal) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 
     @GetMapping("/check")
