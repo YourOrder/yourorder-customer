@@ -26,9 +26,10 @@ public class CustomerOrderService {
     private final ProductViewRepository productViewRepository;
     private final OrderEventProducer orderEventProducer;
 
-    public OrderEntity createOrder(OrderRequest request) {
+    // userId теперь из хедера, а не из тела
+    public OrderEntity createOrder(UUID userId, OrderRequest request) {
         OrderEntity order = OrderEntity.builder()
-                .userId(request.userId())
+                .userId(userId)
                 .build();
 
         for (OrderItemRequest itemRequest : request.items()) {
@@ -41,13 +42,13 @@ public class CustomerOrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderEntity getOrderById(UUID orderId) {
-        return orderRepository.findById(orderId)
+    public OrderEntity getOrderById(UUID orderId, UUID userId) {
+        return orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
     }
 
-    public OrderEntity cancelOrder(UUID orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
+    public OrderEntity cancelOrder(UUID orderId, UUID userId) {
+        OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
 
         order.cancel();
@@ -57,31 +58,37 @@ public class CustomerOrderService {
     }
 
     public OrderEntity markOrderReserved(UUID orderId) {
-        OrderEntity order = getOrderById(orderId);
+        OrderEntity order = findById(orderId);
         order.markReserved();
         return orderRepository.save(order);
     }
 
     public OrderEntity markOrderPaid(UUID orderId) {
-        OrderEntity order = getOrderById(orderId);
+        OrderEntity order = findById(orderId);
         order.markPaid();
         return orderRepository.save(order);
     }
 
     public OrderEntity markOrderPaymentFailed(UUID orderId) {
-        OrderEntity order = getOrderById(orderId);
+        OrderEntity order = findById(orderId);
         order.cancel();
         return orderRepository.save(order);
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderEntity> getOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable);
+    public Page<OrderEntity> getOrders(UUID userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable);
+    }
+
+    // внутренний метод для Kafka-консьюмеров (без проверки userId)
+    private OrderEntity findById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
     }
 
     private void addOrderItem(OrderEntity order, OrderItemRequest itemRequest) {
         ProductViewEntity product = productViewRepository.findById(itemRequest.productId())
-                .orElseThrow(() -> new NotFoundException("Product not found"));
+                .orElseThrow(() -> new NotFoundException("Product not found: " + itemRequest.productId()));
 
         OrderItemEntity orderItem = OrderItemEntity.builder()
                 .product(product)
@@ -92,3 +99,4 @@ public class CustomerOrderService {
         order.addItem(orderItem);
     }
 }
+

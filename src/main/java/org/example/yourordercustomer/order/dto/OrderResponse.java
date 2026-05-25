@@ -4,6 +4,7 @@ import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -12,6 +13,7 @@ public record OrderResponse(
         UUID userId,
         String status,
         BigDecimal totalAmount,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        List<OrderItemResponse> items
 ) {
 }

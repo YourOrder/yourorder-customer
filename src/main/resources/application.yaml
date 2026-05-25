@@ -3,6 +3,18 @@ spring:
     name: yourorder-customer
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: customer-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "org.example.yourordercustomer.kafka.event"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        max.block.ms: 5000
 
   datasource:
     url: jdbc:postgresql://localhost:5434/yourorder_customer
@@ -25,3 +37,14 @@ spring:
 
 server:
   port: 8082
+
+kafka:
+  topics:
+    product-created: product.created
+    product-updated: product.updated
+    product-deleted: product.deleted
+    order-created: order.created
+    order-cancelled: order.cancelled
+    stock-reserved: stock.reserved
+    payment-completed: payment.completed
+    payment-failed: payment.failed

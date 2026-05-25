@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.yourordercustomer.order.dto.OrderRequest;
 import org.example.yourordercustomer.order.dto.OrderResponse;
+import org.example.yourordercustomer.order.dto.OrderItemResponse;
 import org.example.yourordercustomer.order.entity.OrderEntity;
 import org.example.yourordercustomer.order.service.CustomerOrderService;
 import org.springframework.data.domain.Page;
@@ -22,8 +23,39 @@ public class CustomerOrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse createOrder(@Valid @RequestBody OrderRequest request) {
-        OrderEntity order = customerOrderService.createOrder(request);
+    public OrderResponse createOrder(
+            @RequestHeader("X-User-Id") UUID userId, // из Gateway
+            @Valid @RequestBody OrderRequest request
+    ) {
+        OrderEntity order = customerOrderService.createOrder(userId, request);
+        return mapToResponse(order);
+    }
+
+
+    @GetMapping("/{id}")
+    public OrderResponse getOrderById(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID id
+    ) {
+        OrderEntity order = customerOrderService.getOrderById(id, userId);
+        return mapToResponse(order);
+    }
+
+    @GetMapping
+    public Page<OrderResponse> getOrders(
+            @RequestHeader("X-User-Id") UUID userId,
+            Pageable pageable
+    ) {
+        return customerOrderService.getOrders(userId, pageable)
+                .map(this::mapToResponse);
+    }
+
+    @PatchMapping("/{id}/cancel")
+    public OrderResponse cancelOrder(
+            @RequestHeader("X-User-Id") UUID userId,
+            @PathVariable UUID id
+    ) {
+        OrderEntity order = customerOrderService.cancelOrder(id, userId);
         return mapToResponse(order);
     }
 
@@ -32,32 +64,24 @@ public class CustomerOrderController {
         return "Customer service works!";
     }
 
-
-    @GetMapping("/{id}")
-    public OrderResponse getOrderById(@PathVariable UUID id) {
-        OrderEntity order = customerOrderService.getOrderById(id);
-        return mapToResponse(order);
-    }
-
-    @GetMapping
-    public Page<OrderResponse> getOrders(Pageable pageable) {
-        return customerOrderService.getOrders(pageable)
-                .map(this::mapToResponse);
-    }
-
-    @PatchMapping("/{id}/cancel")
-    public OrderResponse cancelOrder(@PathVariable UUID id) {
-        OrderEntity order = customerOrderService.cancelOrder(id);
-        return mapToResponse(order);
-    }
-
     private OrderResponse mapToResponse(OrderEntity order) {
+        var items = order.getItems().stream()
+                .map(item -> new OrderItemResponse(
+                        item.getId(),
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getQuantity(),
+                        item.getPrice()
+                ))
+                .toList();
+
         return OrderResponse.builder()
                 .id(order.getId())
                 .userId(order.getUserId())
                 .status(order.getStatus().name())
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
+                .items(items)
                 .build();
     }
 }
