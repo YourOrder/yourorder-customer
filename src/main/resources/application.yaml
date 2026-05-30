@@ -17,9 +17,9 @@ spring:
         max.block.ms: 5000
 
   datasource:
-    url: jdbc:postgresql://localhost:5434/yourorder_customer
-    username: customer_user
-    password: customer_pass
+    url: jdbc:postgresql://localhost:5434/mydb
+    username: postgres
+    password: 1234
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -46,5 +46,6 @@ kafka:
     order-created: order.created
     order-cancelled: order.cancelled
     stock-reserved: stock.reserved
+    stock-released: stock.released
     payment-completed: payment.completed
     payment-failed: payment.failed

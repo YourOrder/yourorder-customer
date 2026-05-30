@@ -1,7 +1,9 @@
 package org.example.yourordercustomer.kafka.consumer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.yourordercustomer.kafka.event.ProductDeletedEvent;
 import org.example.yourordercustomer.kafka.event.ProductEvent;
 import org.example.yourordercustomer.productview.entity.ProductViewEntity;
 import org.example.yourordercustomer.productview.repository.ProductViewRepository;
@@ -17,10 +19,12 @@ import java.time.LocalDateTime;
 public class ProductViewConsumer {
 
     private final ProductViewRepository productViewRepository;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "${kafka.topics.product-created}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
-    public void onProductCreated(ProductEvent event) {
+    public void onProductCreated(String message) throws Exception {
+        ProductEvent event = objectMapper.readValue(message, ProductEvent.class);
         log.info("product.created: id={}", event.id());
         productViewRepository.findById(event.id()).ifPresentOrElse(
                 existing -> log.warn("ProductView already exists: {}", event.id()),
@@ -30,7 +34,8 @@ public class ProductViewConsumer {
 
     @KafkaListener(topics = "${kafka.topics.product-updated}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
-    public void onProductUpdated(ProductEvent event) {
+    public void onProductUpdated(String message) throws Exception {
+        ProductEvent event = objectMapper.readValue(message, ProductEvent.class);
         log.info("product.updated: id={}", event.id());
         productViewRepository.findById(event.id()).ifPresentOrElse(
                 existing -> {
@@ -49,7 +54,8 @@ public class ProductViewConsumer {
 
     @KafkaListener(topics = "${kafka.topics.product-deleted}", groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
-    public void onProductDeleted(ProductEvent event) {
+    public void onProductDeleted(String message) throws Exception {
+        ProductDeletedEvent event = objectMapper.readValue(message, ProductDeletedEvent.class);
         log.info("product.deleted: id={}", event.id());
         productViewRepository.deleteById(event.id());
     }
@@ -64,4 +70,3 @@ public class ProductViewConsumer {
                 .build();
     }
 }
-

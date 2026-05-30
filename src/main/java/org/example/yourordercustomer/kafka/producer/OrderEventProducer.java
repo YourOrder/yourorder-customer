@@ -2,6 +2,7 @@ package org.example.yourordercustomer.kafka.producer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.yourordercustomer.kafka.config.KafkaTopicsProperties;
 import org.example.yourordercustomer.kafka.event.OrderCancelledEvent;
 import org.example.yourordercustomer.kafka.event.OrderCreatedEvent;
 import org.example.yourordercustomer.kafka.event.OrderItemEvent;
@@ -18,10 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OrderEventProducer {
 
-    private static final String ORDER_CREATED_TOPIC = "order.created";
-    private static final String ORDER_CANCELLED_TOPIC = "order.cancelled";
-
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTopicsProperties topics;
 
     public void sendOrderCreated(OrderEntity order) {
         OrderCreatedEvent event = new OrderCreatedEvent(
@@ -33,7 +32,7 @@ public class OrderEventProducer {
         );
 
         kafkaTemplate.send(
-                ORDER_CREATED_TOPIC,
+                topics.getOrderCreated(),
                 order.getId().toString(),
                 event
         );
@@ -49,7 +48,7 @@ public class OrderEventProducer {
         );
 
         kafkaTemplate.send(
-                ORDER_CANCELLED_TOPIC,
+                topics.getOrderCancelled(),
                 order.getId().toString(),
                 event
         );

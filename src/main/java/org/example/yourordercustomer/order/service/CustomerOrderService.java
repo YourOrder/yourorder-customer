@@ -41,6 +41,13 @@ public class CustomerOrderService {
     }
 
     @Transactional(readOnly = true)
+    public OrderEntity getOrderById(UUID orderId) {
+        OrderEntity order = findById(orderId);
+        order.getItems().forEach(item -> item.getProduct().getName());
+        return order;
+    }
+
+    @Transactional(readOnly = true)
     public OrderEntity getOrderById(UUID orderId, UUID userId) {
         OrderEntity order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
@@ -77,6 +84,15 @@ public class CustomerOrderService {
     }
 
     @Transactional(readOnly = true)
+    public Page<OrderEntity> getOrders(Pageable pageable) {
+        Page<OrderEntity> page = orderRepository.findAll(pageable);
+        page.getContent().forEach(order ->
+                order.getItems().forEach(item -> item.getProduct().getName())
+        );
+        return page;
+    }
+
+    @Transactional(readOnly = true)
     public Page<OrderEntity> getOrders(UUID userId, Pageable pageable) {
         Page<OrderEntity> page = orderRepository.findByUserId(userId, pageable);
         page.getContent().forEach(order ->
@@ -103,4 +119,3 @@ public class CustomerOrderService {
         order.addItem(orderItem);
     }
 }
-

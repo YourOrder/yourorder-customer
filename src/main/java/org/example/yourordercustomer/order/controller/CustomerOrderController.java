@@ -34,16 +34,20 @@ public class CustomerOrderController {
 
     @GetMapping("/{id}")
     public OrderResponse getOrderById(@PathVariable UUID id) {
-        UUID userId = getPrincipal().userId();
-        OrderEntity order = customerOrderService.getOrderById(id, userId);
+        UserPrincipal principal = getPrincipal();
+        OrderEntity order = isAdmin(principal)
+                ? customerOrderService.getOrderById(id)
+                : customerOrderService.getOrderById(id, principal.userId());
         return mapToResponse(order);
     }
 
 
     @GetMapping
     public Page<OrderResponse> getOrders(Pageable pageable) {
-        UUID userId = getPrincipal().userId();
-        return customerOrderService.getOrders(userId, pageable)
+        UserPrincipal principal = getPrincipal();
+        return (isAdmin(principal)
+                ? customerOrderService.getOrders(pageable)
+                : customerOrderService.getOrders(principal.userId(), pageable))
                 .map(this::mapToResponse);
     }
 
@@ -60,6 +64,10 @@ public class CustomerOrderController {
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
+    }
+
+    private boolean isAdmin(UserPrincipal principal) {
+        return "ADMIN".equals(principal.role());
     }
 
     @GetMapping("/check")
