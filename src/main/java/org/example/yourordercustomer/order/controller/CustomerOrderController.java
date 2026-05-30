@@ -58,6 +58,25 @@ public class CustomerOrderController {
         return mapToResponse(order);
     }
 
+    @PostMapping("/{id}/payment/mock")
+    public OrderResponse mockPayment(@PathVariable UUID id,
+                                     @RequestParam(defaultValue = "true") boolean success) {
+        UserPrincipal principal = getPrincipal();
+        OrderEntity order = isAdmin(principal)
+                ? customerOrderService.getOrderById(id)
+                : customerOrderService.getOrderById(id, principal.userId());
+
+        // TODO: Replace this endpoint with the real payment-service callback/command flow.
+        OrderEntity updatedOrder = success
+                ? customerOrderService.markOrderPaid(order.getId())
+                : customerOrderService.markOrderPaymentFailed(order.getId());
+
+        OrderEntity responseOrder = isAdmin(principal)
+                ? customerOrderService.getOrderById(updatedOrder.getId())
+                : customerOrderService.getOrderById(updatedOrder.getId(), principal.userId());
+        return mapToResponse(responseOrder);
+    }
+
 
     private UserPrincipal getPrincipal() {
         return (UserPrincipal) SecurityContextHolder

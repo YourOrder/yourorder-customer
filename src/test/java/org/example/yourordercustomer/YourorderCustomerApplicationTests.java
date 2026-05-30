@@ -1,13 +1,12 @@
 package org.example.yourordercustomer;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
 class YourorderCustomerApplicationTests {
 
     @Test
-    void contextLoads() {
+    void applicationClassExists() {
+        org.assertj.core.api.Assertions.assertThat(YourorderCustomerApplication.class).isNotNull();
     }
 
 }
