@@ -101,6 +101,15 @@ public class CustomerOrderService {
         return page;
     }
 
+    @Transactional(readOnly = true)
+    public Page<OrderEntity> getSales(UUID companyId, Pageable pageable) {
+        Page<OrderEntity> page = orderRepository.findSalesByCompanyId(companyId, pageable);
+        page.getContent().forEach(order ->
+                order.getItems().forEach(item -> item.getProduct().getName())
+        );
+        return page;
+    }
+
     private OrderEntity findById(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found"));
@@ -109,6 +118,11 @@ public class CustomerOrderService {
     private void addOrderItem(OrderEntity order, OrderItemRequest itemRequest) {
         ProductViewEntity product = productViewRepository.findById(itemRequest.productId())
                 .orElseThrow(() -> new NotFoundException("Product not found: " + itemRequest.productId()));
+
+        int availableQuantity = product.getQuantity() - product.getReservedQuantity();
+        if (availableQuantity < itemRequest.quantity()) {
+            throw new IllegalStateException("Not enough product quantity");
+        }
 
         OrderItemEntity orderItem = OrderItemEntity.builder()
                 .product(product)

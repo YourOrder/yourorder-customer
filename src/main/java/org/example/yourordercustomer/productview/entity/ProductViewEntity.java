@@ -26,8 +26,19 @@ public class ProductViewEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     @Column(name = "company_id", nullable = false)
     private UUID companyId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer quantity = 0;
+
+    @Column(name = "reserved_quantity", nullable = false)
+    @Builder.Default
+    private Integer reservedQuantity = 0;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;

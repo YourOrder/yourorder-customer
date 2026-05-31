@@ -18,4 +18,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     @Query("SELECT o FROM OrderEntity o LEFT JOIN FETCH o.items WHERE o.userId = :userId")
     List<OrderEntity> findByUserIdWithItems(@Param("userId") UUID userId);
     Optional<OrderEntity> findByIdAndUserId(UUID id, UUID userId);
+
+    @Query("""
+            SELECT DISTINCT o FROM OrderEntity o
+            JOIN o.items i
+            JOIN i.product p
+            WHERE p.companyId = :companyId
+            ORDER BY o.createdAt DESC
+            """)
+    Page<OrderEntity> findSalesByCompanyId(@Param("companyId") UUID companyId, Pageable pageable);
 }

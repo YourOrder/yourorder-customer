@@ -2,23 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 002-seed-product-view
       author: stephan
-
+      validCheckSum: ANY
       changes:
-        - insert:
-            tableName: product_view
-            columns:
-              - column:
-                  name: id
-                  value: 22222222-2222-2222-2222-222222222222
-              - column:
-                  name: name
-                  value: Test product
-              - column:
-                  name: price
-                  valueNumeric: 1000.00
-              - column:
-                  name: company_id
-                  value: 33333333-3333-3333-3333-333333333333
-              - column:
-                  name: updated_at
-                  valueDate: 2026-04-27T00:00:00
+        - sql:
+            sql: SELECT 1

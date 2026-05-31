@@ -4,3 +4,12 @@ databaseChangeLog:
 
   - include:
       file: db/changelog/changes/002-seed-product-view.yaml
+
+  - include:
+      file: db/changelog/changes/003-product-image-url.yaml
+
+  - include:
+      file: db/changelog/changes/004-remove-seed-product-view.yaml
+
+  - include:
+      file: db/changelog/changes/005-product-stock-view.yaml

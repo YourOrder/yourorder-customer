@@ -20,12 +20,18 @@ public class CustomerProductController {
     @GetMapping
     public Page<ProductViewEntity> getProducts(
             @RequestParam(required = false) UUID companyId,
-            Pageable pageable
+        Pageable pageable
     ) {
         if (companyId != null) {
-            return productViewRepository.findByCompanyId(companyId, pageable);
+            return productViewRepository.findByCompanyIdAndQuantityGreaterThanOrCompanyIdAndReservedQuantityGreaterThan(
+                    companyId,
+                    0,
+                    companyId,
+                    0,
+                    pageable
+            );
         }
-        return productViewRepository.findAll(pageable);
+        return productViewRepository.findByQuantityGreaterThanOrReservedQuantityGreaterThan(0, 0, pageable);
     }
 
     @GetMapping("/{id}")
@@ -34,4 +40,3 @@ public class CustomerProductController {
                 .orElseThrow(() -> new NotFoundException("Product not found"));
     }
 }
-

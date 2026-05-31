@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-remove-seed-product-view
+      author: codex
+      changes:
+        - delete:
+            tableName: product_view
+            where: id = '22222222-2222-2222-2222-222222222222'

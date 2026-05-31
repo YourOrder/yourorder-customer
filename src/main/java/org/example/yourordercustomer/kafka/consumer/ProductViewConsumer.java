@@ -41,7 +41,10 @@ public class ProductViewConsumer {
                 existing -> {
                     existing.setName(event.name());
                     existing.setPrice(event.price());
+                    existing.setImageUrl(event.imageUrl());
                     existing.setCompanyId(event.companyId());
+                    existing.setQuantity(event.quantity() == null ? 0 : event.quantity());
+                    existing.setReservedQuantity(event.reservedQuantity() == null ? 0 : event.reservedQuantity());
                     existing.setUpdatedAt(LocalDateTime.now());
                     productViewRepository.save(existing);
                 },
@@ -65,7 +68,10 @@ public class ProductViewConsumer {
                 .id(event.id())
                 .name(event.name())
                 .price(event.price())
+                .imageUrl(event.imageUrl())
                 .companyId(event.companyId())
+                .quantity(event.quantity() == null ? 0 : event.quantity())
+                .reservedQuantity(event.reservedQuantity() == null ? 0 : event.reservedQuantity())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }

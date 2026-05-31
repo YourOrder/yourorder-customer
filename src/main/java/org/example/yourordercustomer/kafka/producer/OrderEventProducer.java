@@ -26,6 +26,7 @@ public class OrderEventProducer {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId(),
                 order.getUserId(),
+                resolveCompanyId(order.getItems()),
                 order.getTotalAmount(),
                 order.getCreatedAt(),
                 mapItems(order.getItems())
@@ -64,5 +65,12 @@ public class OrderEventProducer {
                         item.getPrice()
                 ))
                 .toList();
+    }
+
+    private java.util.UUID resolveCompanyId(List<OrderItemEntity> items) {
+        return items.stream()
+                .map(item -> item.getProduct().getCompanyId())
+                .findFirst()
+                .orElse(null);
     }
 }

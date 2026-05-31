@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-product-image-url
+      author: codex
+      changes:
+        - addColumn:
+            tableName: product_view
+            columns:
+              - column:
+                  name: image_url
+                  type: VARCHAR(1000)

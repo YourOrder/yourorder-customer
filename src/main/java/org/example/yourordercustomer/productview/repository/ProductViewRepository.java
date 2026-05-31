@@ -10,4 +10,14 @@ import java.util.UUID;
 public interface ProductViewRepository extends JpaRepository<ProductViewEntity, UUID> {
 
     Page<ProductViewEntity> findByCompanyId(UUID companyId, Pageable pageable);
+
+    Page<ProductViewEntity> findByQuantityGreaterThanOrReservedQuantityGreaterThan(Integer quantity, Integer reservedQuantity, Pageable pageable);
+
+    Page<ProductViewEntity> findByCompanyIdAndQuantityGreaterThanOrCompanyIdAndReservedQuantityGreaterThan(
+            UUID companyIdForQuantity,
+            Integer quantity,
+            UUID companyIdForReserved,
+            Integer reservedQuantity,
+            Pageable pageable
+    );
 }

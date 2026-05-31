@@ -51,6 +51,16 @@ public class CustomerOrderController {
                 .map(this::mapToResponse);
     }
 
+    @GetMapping("/sales")
+    public Page<OrderResponse> getSales(@RequestParam UUID companyId, Pageable pageable) {
+        UserPrincipal principal = getPrincipal();
+        if (!isAdmin(principal) && !"SUPPLIER".equals(principal.role())) {
+            throw new org.springframework.security.access.AccessDeniedException("Sales are available only for suppliers and admins");
+        }
+        return customerOrderService.getSales(companyId, pageable)
+                .map(this::mapToResponse);
+    }
+
     @PatchMapping("/{id}/cancel")
     public OrderResponse cancelOrder(@PathVariable UUID id) {
         UUID userId = getPrincipal().userId();
